@@ -5,11 +5,13 @@ import numpy as np
 
 
 class GridWorldEnv(gym.Env):
-    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 4}
+    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 4, "configure.required": ["size"]}
 
-    def __init__(self, render_mode=None, size=10): #TODO: decide on the size of the state space
+    def __init__(self, render_mode=None, size=None): #TODO: decide on the size of the state space
+        if size is None:
+            raise ValueError("Missing argument 'size' in constructor. Please provide a value for 'size'.")
         self.size = size  # The size of the square grid
-        self.window_size = 512  # The size of the PyGame window
+        self.window_size = 512  #s The size of the PyGame window
 
         # Observations are dictionaries with the agent's and the target's location.
         # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
