@@ -7,7 +7,7 @@ import numpy as np
 class GridWorldEnv(gym.Env):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 4}
 
-    def __init__(self, render_mode=None, size=10):
+    def __init__(self, render_mode=None, size=10): #TODO: decide on the size of the state space
         self.size = size  # The size of the square grid
         self.window_size = 512  # The size of the PyGame window
 
@@ -16,7 +16,7 @@ class GridWorldEnv(gym.Env):
         self.observation_space = spaces.Dict(
             {
                 "agent": spaces.Box(0, size - 1, shape=(2,), dtype=int),
-                "target": spaces.Box(0, size - 1, shape=(2,), dtype=int),
+                "target": spaces.Box(0, size - 1, shape=(2,), dtype=int), #TODO: Remove the target here
             }
         )
 
@@ -49,14 +49,14 @@ class GridWorldEnv(gym.Env):
         self.clock = None
 
     def _get_obs(self):
-        return {"agent": self._agent_location, "target": self._target_location}
+        return {"agent": self._agent_location, "target": self._target_location} #TODO: Remove the target here too
 
     def _get_info(self):
         return {
             "distance": np.linalg.norm(
                 self._agent_location - self._target_location, ord=1
             )
-        }
+        } #TODO: No need to return the distance between the agent and the target
 
     def reset(self, seed=None, options=None):
         # We need the following line to seed self.np_random
@@ -70,10 +70,10 @@ class GridWorldEnv(gym.Env):
         while np.array_equal(self._target_location, self._agent_location):
             self._target_location = self.np_random.integers(
                 0, self.size, size=2, dtype=int
-            )
+            )#TODO: remove this
 
         observation = self._get_obs()
-        info = self._get_info()
+        info = self._get_info() #TODO: potentially not required depending a bit on what is actually returned
 
         if self.render_mode == "human":
             self._render_frame()
@@ -86,17 +86,21 @@ class GridWorldEnv(gym.Env):
         # We use `np.clip` to make sure we don't leave the grid
         self._agent_location = np.clip(
             self._agent_location + direction, 0, self.size - 1
-        )
+        )#TODO: In our case we might also want to clip it in other scenarios if it hits a wall
+
         # An episode is done iff the agent has reached the target
-        terminated = np.array_equal(self._agent_location, self._target_location)
-        reward = 1 if terminated else 0  # Binary sparse rewards
+        terminated = np.array_equal(self._agent_location, self._target_location) #TODO: this is not required for us: need to constrain it with episodes
+        reward = 1 if terminated else 0  # Binary sparse rewards #TODO: Here we need to assign the reward of the new state
+        #TODO: also assign constraint
         observation = self._get_obs()
-        info = self._get_info()
+        info = self._get_info() #TODO: Again this might not be required here
 
         if self.render_mode == "human":
             self._render_frame()
 
-        return observation, reward, terminated, False, info
+        return observation, reward, terminated, False, info #TODO: Also return the constraint
+
+    #TODO: Adjust the rendering here for the required environment
 
     def render(self):
         if self.render_mode == "rgb_array":
