@@ -86,13 +86,14 @@ class GridWorldEnv(gym.Env):
     def step(self, action):
         # Map the action (element of {0,1,2,3}) to the direction we walk in
         direction = self._action_to_direction[action]
-
+        # We use `np.clip` to make sure we don't leave the grid
         self._agent_location = np.clip(
             self._agent_location + direction, 0, self.size - 1
-        )
+        )#TODO: In our case we might also want to clip it in other scenarios if it hits a wall
 
+        # An episode is done iff the agent has reached the target
         terminated = False
-        reward = self.rewards[self._agent_location[0], self._agent_location[1]]
+        reward = self.rewards[self._agent_location[0], self._agent_location[1]] #1 if terminated else 0  # Binary sparse rewards #TODO: Here we need to assign the reward of the new state
         cost = self.costs[self._agent_location[0], self._agent_location[1]]
         observation = self._get_obs()
         info = self._get_info() 
@@ -100,12 +101,12 @@ class GridWorldEnv(gym.Env):
         if self.render_mode == "human":
             self._render_frame()
 
-        return observation, [reward, cost], terminated, False, info 
+        return observation, [reward, cost], terminated, False, info #TODO: Also return the constraint
 
     #TODO: Adjust the rendering here for the required environment
 
     def render(self):
-        if self.render_mode == "rsgb_array":
+        if self.render_mode == "rgb_array":
             return self._render_frame()
 
     def _render_frame(self):
