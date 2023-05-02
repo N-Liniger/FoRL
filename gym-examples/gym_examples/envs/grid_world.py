@@ -6,7 +6,7 @@ import numpy as np
 
 class GridWorldEnv(gym.Env):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 4, "configure.required": ["size", "rewards", "costs"]}
-
+    
     def __init__(self, render_mode=None, size=None, rewards=None, costs=None): 
         if size is None:
             raise ValueError("Missing argument 'size' in constructor. Please provide a value for 'size'.")
@@ -14,6 +14,8 @@ class GridWorldEnv(gym.Env):
         self.window_size = 512  # The size of the PyGame window
         self.rewards = rewards
         self.costs = costs
+        self.S = size*size
+        self.A = 4
 
         # Observations are dictionaries with the agent's and the target's location.
         # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
@@ -23,7 +25,7 @@ class GridWorldEnv(gym.Env):
             }
         )
 
-        # We have 4 actions, corresponding to "right", "up", "left", "down", "right"
+        # We have 4 actions, corresponding to "down", "right", "up", "left"
         self.action_space = spaces.Discrete(4)
 
         """
@@ -32,10 +34,10 @@ class GridWorldEnv(gym.Env):
         I.e. 0 corresponds to "right", 1 to "up" etc.
         """
         self._action_to_direction = {
-            0: np.array([1, 0]),
-            1: np.array([0, 1]),
-            2: np.array([-1, 0]),
-            3: np.array([0, -1]),
+            0: np.array([1, 0]), # DOWN
+            1: np.array([0, 1]), # RIGHT
+            2: np.array([-1, 0]),# UP
+            3: np.array([0, -1]),# LEFT
         }
 
         assert render_mode is None or render_mode in self.metadata["render_modes"]
@@ -57,13 +59,15 @@ class GridWorldEnv(gym.Env):
     def _get_info(self):
         return {}
 
-    def reset(self, seed=None, options=None):
+    def reset(self, seed=None, options=None, state=None):
         # We need the following line to seed self.np_random
         super().reset(seed=seed)
 
         # Choose the agent's location uniformly at random
-        self._agent_location = self.np_random.integers(0, self.size, size=2, dtype=int)
-
+        if state is None: 
+            self._agent_location = self.np_random.integers(0, self.size, size=2, dtype=int)
+        else: 
+            self._agent_location = state
         # We will sample the target's location randomly until it does not coincide with the agent's location
         #self._target_location = self._agent_location
         #while np.array_equal(self._target_location, self._agent_location):
